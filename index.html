@@ -56,18 +56,13 @@ img{max-width:100%;display:block}
 @media(pointer:coarse){.c-dot,.c-ring{display:none}}
 
 /* ─── NAV ─────────────────────────────────────────── */
-nav{
+#nav{
   position:fixed;top:0;left:0;right:0;z-index:500;
   display:flex;align-items:center;justify-content:space-between;
   padding:1.5rem 4rem;
-  transition:all .5s cubic-bezier(.4,0,.2,1);
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .45s cubic-bezier(.4,0,.2,1);
 }
-nav.solid{
-  background:rgba(14,11,8,.94);
-  backdrop-filter:blur(20px);
-  padding:1rem 4rem;
-  border-bottom:1px solid rgba(184,146,74,.12);
-}
+#nav.hidden{transform:translateY(-110%);opacity:0;pointer-events:none}
 .nav-brand{text-decoration:none;display:flex;flex-direction:column;align-items:center}
 .nav-brand-main{
   font-family:'Cormorant Garamond',serif;
@@ -89,35 +84,66 @@ nav.solid{
 .nav-reserve{border:1px solid rgba(184,146,74,.5);color:var(--gold-light)!important;padding:.55rem 1.4rem;transition:all .4s!important}
 .nav-reserve:hover{background:var(--gold)!important;color:#fff!important}
 
-/* hamburger */
-.nav-burger{
-  display:none;flex-direction:column;justify-content:center;gap:5px;
-  width:36px;height:36px;background:none;border:none;cursor:pointer;padding:4px;
+/* ─── NAV FAB (floating btn when scrolled) ─────────── */
+#nav-fab{
+  position:fixed;top:1.1rem;right:1.5rem;z-index:600;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--espresso);
+  border:1px solid rgba(184,146,74,.45);
+  cursor:pointer;padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 0 1px rgba(184,146,74,.07);
+  opacity:0;transform:scale(.6) translateY(-8px);
+  transition:opacity .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1),background .25s;
+  pointer-events:none;
 }
-.nav-burger span{display:block;height:1.5px;background:#fff;border-radius:2px;transition:all .35s}
-.nav-burger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
-.nav-burger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
-.nav-burger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+#nav-fab.vis{opacity:1;transform:scale(1) translateY(0);pointer-events:auto}
+#nav-fab:hover{background:#3a1e0e}
+#nav-fab span{display:block;width:17px;height:1.5px;background:var(--gold-light);border-radius:2px;transition:all .35s}
+#nav-fab.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+#nav-fab.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+#nav-fab.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
-/* mobile drawer */
-.nav-drawer{
-  position:fixed;top:0;left:0;right:0;bottom:0;z-index:490;
-  background:rgba(14,11,8,.97);backdrop-filter:blur(20px);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
-  opacity:0;visibility:hidden;transition:all .4s;
+/* ─── NAV OVERLAY ──────────────────────────────────── */
+#nav-overlay{
+  position:fixed;inset:0;z-index:550;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,6,3,.94);backdrop-filter:blur(22px);
+  opacity:0;visibility:hidden;
+  transition:opacity .4s cubic-bezier(.4,0,.2,1),visibility .4s;
 }
-.nav-drawer.open{opacity:1;visibility:visible}
-.nav-drawer a{
-  font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;
-  color:rgba(255,255,255,.7);text-decoration:none;letter-spacing:.05em;
-  transition:color .2s;
+#nav-overlay.open{opacity:1;visibility:visible}
+.nav-ov-menu{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.nav-ov-menu a{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,7vw,3.2rem);font-weight:300;
+  color:rgba(255,255,255,.6);text-decoration:none;
+  letter-spacing:.04em;
+  opacity:0;transform:translateY(18px);
+  transition:color .25s,opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);
 }
-.nav-drawer a:hover{color:var(--gold-light)}
-.nav-drawer .drawer-reserve{
-  margin-top:1rem;border:1px solid var(--gold);color:var(--gold-light)!important;
-  font-family:'Jost',sans-serif!important;font-size:.85rem!important;
-  letter-spacing:.2em;text-transform:uppercase;padding:.9rem 2.5rem;
+#nav-overlay.open .nav-ov-menu a{opacity:1;transform:translateY(0)}
+#nav-overlay.open .nav-ov-menu a:nth-child(1){transition-delay:.06s}
+#nav-overlay.open .nav-ov-menu a:nth-child(2){transition-delay:.12s}
+#nav-overlay.open .nav-ov-menu a:nth-child(3){transition-delay:.18s}
+#nav-overlay.open .nav-ov-menu a:nth-child(4){transition-delay:.24s}
+#nav-overlay.open .nav-ov-menu a:nth-child(5){transition-delay:.3s}
+.nav-ov-menu a:hover{color:var(--gold-light)}
+.nav-ov-reserve{
+  margin-top:.8rem;
+  border:1px solid rgba(184,146,74,.6)!important;
+  color:var(--gold-light)!important;
+  font-family:'Jost',sans-serif!important;
+  font-size:.8rem!important;
+  letter-spacing:.22em;text-transform:uppercase;
+  padding:.85rem 2.8rem!important;
 }
+.nav-ov-sub{
+  margin-top:1.5rem;font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;
+  color:rgba(255,255,255,.18);
+  opacity:0;transition:opacity .5s .38s;
+}
+#nav-overlay.open .nav-ov-sub{opacity:1}
 
 /* ─── HERO ─────────────────────────────────────────── */
 .hero{
@@ -697,10 +723,8 @@ footer{
 /* ─── RESPONSIVE ─────────────────────────────────────── */
 /* Tablet */
 @media(max-width:1024px){
-  nav{padding:1.3rem 2rem}
-  nav.solid{padding:.9rem 2rem}
+  #nav{padding:1.3rem 2rem}
   .nav-links{display:none}
-  .nav-burger{display:flex}
 
   .about-grid{grid-template-columns:1fr;gap:3rem}
   .about-visual{height:clamp(280px,55vw,420px);margin-bottom:1rem}
@@ -731,8 +755,8 @@ footer{
 
 /* Mobile */
 @media(max-width:640px){
-  nav{padding:1rem 1.2rem}
-  nav.solid{padding:.75rem 1.2rem}
+  #nav{padding:1rem 1.2rem}
+  #nav-fab{top:.9rem;right:1.1rem}
 
   .hero-ornament{margin-bottom:1.5rem}
   .hero-sub{margin-bottom:2rem}
@@ -786,7 +810,23 @@ footer{
   /* modal dock responsive */
   .dock-thumb{width:40px;height:40px}
   .modal-close{top:-2.5rem}
+
+  /* gallery modal mobile fixes */
+  #gallery-modal{padding:3.5rem .75rem .75rem;align-items:flex-start;overflow-y:auto}
+  .modal-main{margin:auto}
+  .modal-img-wrap{max-height:52vh;border-radius:10px 10px 0 0}
+  .modal-img-wrap img{max-height:52vh}
+  .modal-caption{position:static;background:rgba(14,11,8,.92);padding:1rem 1.1rem;border-radius:0 0 10px 10px}
+  .modal-cap-title{color:var(--parchment);font-size:1rem}
+  .modal-cap-sub{color:rgba(247,242,234,.7)}
+
+  /* reservation form color */
+  .f-field input,.f-field select{color:var(--parchment)!important;color-scheme:dark}
 }
+
+/* Prevent horizontal scroll/shift globally */
+html{overflow-x:hidden}
+.menu-carousel-outer{touch-action:pan-y pinch-zoom}
 
 @media(max-width:380px){
   .hero-title{font-size:2.6rem}
@@ -810,13 +850,21 @@ footer{
 <div class="c-dot" id="cDot"></div>
 <div class="c-ring" id="cRing"></div>
 
-<!-- MOBILE DRAWER -->
-<div class="nav-drawer" id="navDrawer">
-  <a href="#about" onclick="closeDrawer()">O nama</a>
-  <a href="#menu" onclick="closeDrawer()">Meni</a>
-  <a href="#chef" onclick="closeDrawer()">Chef</a>
-  <a href="#gallery" onclick="closeDrawer()">Galerija</a>
-  <a href="#reservation" class="drawer-reserve" onclick="closeDrawer()">Rezervacija</a>
+<!-- NAV FAB -->
+<button id="nav-fab" aria-label="Izbornik" onclick="toggleOverlay()">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- NAV OVERLAY -->
+<div id="nav-overlay" onclick="handleOverlayClick(event)">
+  <nav class="nav-ov-menu">
+    <a href="#about" onclick="closeOverlay()">O nama</a>
+    <a href="#menu" onclick="closeOverlay()">Meni</a>
+    <a href="#chef" onclick="closeOverlay()">Chef</a>
+    <a href="#gallery" onclick="closeOverlay()">Galerija</a>
+    <a href="#reservation" class="nav-ov-reserve" onclick="closeOverlay()">Rezervacija</a>
+    <p class="nav-ov-sub">Dolce Vita · Fine Dining · Zagreb</p>
+  </nav>
 </div>
 
 <!-- NAV -->
@@ -832,9 +880,6 @@ footer{
     <li><a href="#gallery" data-text="Galerija">Galerija</a></li>
     <li><a href="#reservation" data-text="Rezervacija" class="nav-reserve">Rezervacija</a></li>
   </ul>
-  <button class="nav-burger" id="burger" onclick="toggleDrawer()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
 </nav>
 
 <!-- HERO -->
@@ -889,7 +934,7 @@ footer{
     <div class="about-visual rv-l">
       <div class="about-frame"></div>
       <img class="about-photo-main" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=85" alt="Restoran interijor"/>
-      <img class="about-photo-sec" src="https://images.unsplash.com/photo-1551183053-bf91798d56f3?w=600&q=85" alt="Svježa pasta"/>
+      <img class="about-photo-sec" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=85" alt="Svježa pasta"/>
       <div class="about-since">
         <span class="since-year">2009</span>
         <span class="since-lbl">Tradicija</span>
@@ -952,7 +997,7 @@ footer{
 
       <div class="mc-card">
         <div class="mc-img-wrap">
-          <img class="mc-img" src="https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=85" alt="Bruschetta" loading="lazy"/>
+          <img class="mc-img" src="https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=600&q=85" alt="Bruschetta" loading="lazy"/>
           <div class="mc-ov"></div>
         </div>
         <div class="mc-body">
@@ -961,7 +1006,6 @@ footer{
           <div class="mc-desc">Hrskavi kruh s rajčicama, češnjakom, svježim bosiljkom i ekstra djevičanskim maslinovim uljem</div>
           <div class="mc-foot">
             <span class="mc-price">8,50 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -977,7 +1021,6 @@ footer{
           <div class="mc-desc">Tanko rezana goveđa plećka, rukola, kapersi, parmigiano reggiano i citrus dresing</div>
           <div class="mc-foot">
             <span class="mc-price">14,00 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -993,7 +1036,6 @@ footer{
           <div class="mc-desc">Kremasta burrata, pršut iz Parme, karamelizirana smokva, orasi i balzamični glaze</div>
           <div class="mc-foot">
             <span class="mc-price">16,00 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -1009,14 +1051,13 @@ footer{
           <div class="mc-desc">Ručno rađena tagliatelle, bolognese ragù kuhan 6 sati, svježi parmigiano reggiano</div>
           <div class="mc-foot">
             <span class="mc-price">18,00 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
 
       <div class="mc-card">
         <div class="mc-img-wrap">
-          <img class="mc-img" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=85" alt="Orata" loading="lazy"/>
+          <img class="mc-img" src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=85" alt="Orata" loading="lazy"/>
           <div class="mc-ov"></div>
         </div>
         <div class="mc-body">
@@ -1025,7 +1066,6 @@ footer{
           <div class="mc-desc">Cijela orata pečena s limunom, kaperlima, cherry rajčicama i mediteranskim začinskim biljem</div>
           <div class="mc-foot">
             <span class="mc-price">26,00 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -1041,7 +1081,6 @@ footer{
           <div class="mc-desc">T-bone od 600g, rosemarin, češnjak, maslinovo ulje i fleur de sel — pečena na drvenoj vatri</div>
           <div class="mc-foot">
             <span class="mc-price">38,00 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -1057,7 +1096,6 @@ footer{
           <div class="mc-desc">Klasičan tiramisù po originalnom receptu — mascarpone, savoiardi, jaki espresso i kakao</div>
           <div class="mc-foot">
             <span class="mc-price">9,50 €</span>
-            <span class="mc-read">Naruči <span class="mc-read-arrow">→</span></span>
           </div>
         </div>
       </div>
@@ -1330,17 +1368,27 @@ if(window.matchMedia('(pointer:fine)').matches){
 
 // ── NAV ────────────────────────────────────────────────
 const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>nav.classList.toggle('solid',scrollY>80));
+const navFab=document.getElementById('nav-fab');
+const navOverlay=document.getElementById('nav-overlay');
 
-function toggleDrawer(){
-  const d=document.getElementById('navDrawer'),b=document.getElementById('burger');
-  d.classList.toggle('open');b.classList.toggle('open');
-  document.body.style.overflow=d.classList.contains('open')?'hidden':'';
+window.addEventListener('scroll',()=>{
+  const scrolled=scrollY>100;
+  nav.classList.toggle('hidden',scrolled);
+  navFab.classList.toggle('vis',scrolled);
+});
+
+function toggleOverlay(){
+  const open=navOverlay.classList.toggle('open');
+  navFab.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
 }
-function closeDrawer(){
-  document.getElementById('navDrawer').classList.remove('open');
-  document.getElementById('burger').classList.remove('open');
+function closeOverlay(){
+  navOverlay.classList.remove('open');
+  navFab.classList.remove('open');
   document.body.style.overflow='';
+}
+function handleOverlayClick(e){
+  if(e.target===navOverlay)closeOverlay();
 }
 
 // ── PARALLAX HERO ──────────────────────────────────────
