@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dolce Vita — Fine Dining Zagreb</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ─── RESET & ROOT ─────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0b08;
+  --parchment:#f7f2ea;
+  --gold:#b8924a;
+  --gold-light:#d4af70;
+  --gold-pale:#e8d5a3;
+  --espresso:#2c1a0e;
+  --sienna:#7a4a2a;
+  --cream:#fdf8f0;
+  --grey:#9a8878;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Jost',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  overflow-x:hidden;
+}
+@media(pointer:fine){body{cursor:none}}
+img{max-width:100%;display:block}
+
+/* ─── LOADER ─────────────────────────────────────── */
+#loader{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--espresso);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .8s ease,visibility .8s;
+}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.loader-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,8vw,3.5rem);color:var(--gold-light);
+  letter-spacing:.25em;
+  animation:fade-in .8s ease forwards;opacity:0;
+}
+.loader-bar-wrap{width:clamp(80px,40vw,120px);height:1px;background:rgba(184,146,74,.2);margin-top:1.5rem;overflow:hidden}
+.loader-bar{width:0;height:100%;background:var(--gold);animation:bar-grow 1.4s .5s ease forwards}
+@keyframes fade-in{to{opacity:1}}
+@keyframes bar-grow{to{width:100%}}
+
+/* ─── CURSOR (desktop only) ───────────────────────── */
+.c-dot,.c-ring{position:fixed;border-radius:50%;pointer-events:none;z-index:9000;transform:translate(-50%,-50%)}
+.c-dot{width:6px;height:6px;background:var(--gold)}
+.c-ring{width:40px;height:40px;border:1px solid rgba(184,146,74,.5);transition:all .18s ease}
+.c-ring.big{width:60px;height:60px;background:rgba(184,146,74,.06);border-color:var(--gold)}
+@media(pointer:coarse){.c-dot,.c-ring{display:none}}
+
+/* ─── NAV ─────────────────────────────────────────── */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.5rem 4rem;
+  transition:transform .45s cubic-bezier(.4,0,.2,1),opacity .45s cubic-bezier(.4,0,.2,1);
+}
+#nav.hidden{transform:translateY(-110%);opacity:0;pointer-events:none}
+.nav-brand{text-decoration:none;display:flex;flex-direction:column;align-items:center}
+.nav-brand-main{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.4rem;font-weight:600;color:#fff;letter-spacing:.15em;line-height:1;
+}
+.nav-brand-sub{font-size:.5rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-top:2px}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{
+  text-decoration:none;color:rgba(255,255,255,.6);
+  font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;
+  position:relative;transition:color .3s;
+}
+.nav-links a::before{
+  content:attr(data-text);position:absolute;top:0;left:0;
+  color:var(--gold-light);clip-path:inset(0 100% 0 0);
+  transition:clip-path .4s cubic-bezier(.4,0,.2,1);white-space:nowrap;
+}
+.nav-links a:hover::before{clip-path:inset(0 0% 0 0)}
+.nav-reserve{border:1px solid rgba(184,146,74,.5);color:var(--gold-light)!important;padding:.55rem 1.4rem;transition:all .4s!important}
+.nav-reserve:hover{background:var(--gold)!important;color:#fff!important}
+
+/* ─── NAV FAB (floating btn when scrolled) ─────────── */
+#nav-fab{
+  position:fixed;top:1.1rem;right:1.5rem;z-index:600;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--espresso);
+  border:1px solid rgba(184,146,74,.45);
+  cursor:pointer;padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 0 1px rgba(184,146,74,.07);
+  opacity:0;transform:scale(.6) translateY(-8px);
+  transition:opacity .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1),background .25s;
+  pointer-events:none;
+}
+#nav-fab.vis{opacity:1;transform:scale(1) translateY(0);pointer-events:auto}
+#nav-fab:hover{background:#3a1e0e}
+#nav-fab span{display:block;width:17px;height:1.5px;background:var(--gold-light);border-radius:2px;transition:all .35s}
+#nav-fab.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+#nav-fab.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+#nav-fab.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* ─── NAV OVERLAY ──────────────────────────────────── */
+#nav-overlay{
+  position:fixed;inset:0;z-index:550;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,6,3,.94);backdrop-filter:blur(22px);
+  opacity:0;visibility:hidden;
+  transition:opacity .4s cubic-bezier(.4,0,.2,1),visibility .4s;
+}
+#nav-overlay.open{opacity:1;visibility:visible}
+.nav-ov-menu{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.nav-ov-menu a{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,7vw,3.2rem);font-weight:300;
+  color:rgba(255,255,255,.6);text-decoration:none;
+  letter-spacing:.04em;
+  opacity:0;transform:translateY(18px);
+  transition:color .25s,opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);
+}
+#nav-overlay.open .nav-ov-menu a{opacity:1;transform:translateY(0)}
+#nav-overlay.open .nav-ov-menu a:nth-child(1){transition-delay:.06s}
+#nav-overlay.open .nav-ov-menu a:nth-child(2){transition-delay:.12s}
+#nav-overlay.open .nav-ov-menu a:nth-child(3){transition-delay:.18s}
+#nav-overlay.open .nav-ov-menu a:nth-child(4){transition-delay:.24s}
+#nav-overlay.open .nav-ov-menu a:nth-child(5){transition-delay:.3s}
+.nav-ov-menu a:hover{color:var(--gold-light)}
+.nav-ov-reserve{
+  margin-top:.8rem;
+  border:1px solid rgba(184,146,74,.6)!important;
+  color:var(--gold-light)!important;
+  font-family:'Jost',sans-serif!important;
+  font-size:.8rem!important;
+  letter-spacing:.22em;text-transform:uppercase;
+  padding:.85rem 2.8rem!important;
+}
+.nav-ov-sub{
+  margin-top:1.5rem;font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;
+  color:rgba(255,255,255,.18);
+  opacity:0;transition:opacity .5s .38s;
+}
+#nav-overlay.open .nav-ov-sub{opacity:1}
+
+/* ─── HERO ─────────────────────────────────────────── */
+.hero{
+  height:100svh;min-height:600px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--espresso);
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=85') center/cover no-repeat;
+  transform:scale(1.1);animation:hero-zoom 20s ease-in-out infinite alternate;
+  opacity:0;transition:opacity 1.5s 1.5s;
+}
+.hero-bg.vis{opacity:.38}
+@keyframes hero-zoom{from{transform:scale(1.1)}to{transform:scale(1.18)}}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,11,8,.2) 0%,rgba(14,11,8,.08) 40%,rgba(14,11,8,.65) 100%)}
+.hero-content{position:relative;text-align:center;color:#fff;padding:0 1.5rem;max-width:860px;width:100%}
+.hero-ornament{
+  display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:2rem;
+  opacity:0;transform:translateY(20px);animation:reveal 1s 1.8s ease forwards;
+}
+.ornament-line{width:50px;height:1px;background:var(--gold);opacity:.6}
+.ornament-diamond{width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
+.hero-eyebrow{
+  font-size:.65rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold-light);
+  opacity:0;transform:translateY(16px);animation:reveal 1s 2s ease forwards;
+}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,10vw,7.5rem);
+  font-weight:300;line-height:.92;letter-spacing:-.01em;margin:1.2rem 0;overflow:hidden;
+}
+.htl{display:block;opacity:0;transform:translateY(100%)}
+.htl:nth-child(1){animation:slide-up 1s 2.1s cubic-bezier(.4,0,.2,1) forwards}
+.htl:nth-child(2){animation:slide-up 1s 2.3s cubic-bezier(.4,0,.2,1) forwards;font-style:italic;color:var(--gold-light)}
+.htl:nth-child(3){animation:slide-up 1s 2.5s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes slide-up{to{opacity:1;transform:translateY(0)}}
+@keyframes reveal{to{opacity:1;transform:translateY(0)}}
+.hero-sub{
+  font-size:clamp(.85rem,2.5vw,1rem);font-weight:300;line-height:1.9;
+  color:rgba(255,255,255,.55);max-width:420px;margin:1.5rem auto 3rem;
+  opacity:0;transform:translateY(16px);animation:reveal 1s 2.8s ease forwards;
+}
+.hero-btns{
+  display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;
+  opacity:0;transform:translateY(16px);animation:reveal 1s 3s ease forwards;
+}
+.btn-fill{
+  border:1px solid var(--gold);color:var(--gold-light);
+  padding:.85rem 2.2rem;text-decoration:none;
+  font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;font-weight:500;
+  position:relative;overflow:hidden;transition:color .4s;
+}
+.btn-fill::before{
+  content:'';position:absolute;inset:0;background:var(--gold);
+  transform:translateX(-101%);transition:transform .4s cubic-bezier(.4,0,.2,1);z-index:-1;
+}
+.btn-fill:hover{color:#fff}
+.btn-fill:hover::before{transform:translateX(0)}
+.hero-scroll{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;
+  opacity:0;animation:reveal 1s 3.5s ease forwards;
+}
+.scroll-txt{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.scroll-mouse{width:20px;height:32px;border:1px solid rgba(255,255,255,.2);border-radius:10px;display:flex;justify-content:center;padding-top:5px}
+.scroll-dot{width:2px;height:5px;background:var(--gold);border-radius:1px;animation:scroll-anim 2s ease-in-out infinite}
+@keyframes scroll-anim{0%{transform:translateY(0);opacity:1}100%{transform:translateY(9px);opacity:0}}
+
+/* ─── STRIP ──────────────────────────────────────── */
+.strip{background:var(--gold);overflow:hidden;padding:1.1rem 0}
+.strip-track{display:flex;gap:3.5rem;width:max-content;animation:marquee 25s linear infinite}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.strip-item{
+  white-space:nowrap;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(255,255,255,.85);font-weight:500;
+  display:flex;align-items:center;gap:1.2rem;
+}
+.strip-item::after{content:'✦';font-size:.5rem;opacity:.6}
+
+/* ─── ABOUT ───────────────────────────────────────── */
+.about{
+  padding:clamp(4rem,8vw,10rem) clamp(1.5rem,5vw,5rem);
+  max-width:1300px;margin:0 auto;
+}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(3rem,6vw,8rem);align-items:center}
+.about-visual{position:relative;height:clamp(300px,50vw,560px)}
+.about-photo-main{
+  position:absolute;top:0;left:0;width:72%;height:75%;
+  object-fit:cover;box-shadow:0 30px 70px rgba(0,0,0,.12);
+}
+.about-photo-sec{
+  position:absolute;bottom:0;right:0;width:55%;height:58%;
+  object-fit:cover;border:6px solid var(--cream);
+  box-shadow:0 15px 40px rgba(0,0,0,.1);
+}
+.about-frame{
+  position:absolute;top:-18px;left:-18px;width:72%;height:75%;
+  border:1px solid var(--gold-pale);pointer-events:none;
+}
+.about-since{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:var(--espresso);color:var(--gold-light);
+  width:clamp(75px,10vw,95px);height:clamp(75px,10vw,95px);border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;z-index:10;box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+.since-year{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,2.5vw,1.5rem);line-height:1}
+.since-lbl{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-top:2px}
+.tag-label{
+  font-size:.65rem;letter-spacing:.35em;text-transform:uppercase;
+  color:var(--gold);font-weight:500;margin-bottom:1rem;
+  display:flex;align-items:center;gap:.7rem;
+}
+.tag-label::before{content:'';width:28px;height:1px;background:var(--gold)}
+.s-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.8rem,4vw,3.2rem);font-weight:300;line-height:1.15;
+  color:var(--espresso);margin-bottom:1.8rem;
+}
+.s-title em{font-style:italic;color:var(--gold)}
+.about-body p{line-height:1.9;color:var(--sienna);font-size:.95rem;font-weight:300;margin-bottom:1.1rem}
+.about-stats{
+  display:flex;gap:clamp(1.5rem,4vw,3rem);
+  margin-top:2.5rem;padding-top:2.5rem;
+  border-top:1px solid rgba(184,146,74,.2);
+  flex-wrap:wrap;
+}
+.astat-n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,2.8rem);font-weight:300;color:var(--gold);line-height:1;
+}
+.astat-l{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:3px}
+.signature{
+  margin-top:2rem;font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:1.8rem;color:var(--espresso);opacity:.35;
+}
+
+/* ─── FEATURES BAND ─────────────────────────────── */
+.features-band{
+  background:var(--espresso);
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:0;
+}
+.feat-item{
+  padding:clamp(2rem,4vw,3rem) clamp(1.5rem,3vw,2.5rem);
+  text-align:center;position:relative;overflow:hidden;
+  border-right:1px solid rgba(255,255,255,.05);
+  transition:background .4s;
+}
+.feat-item:last-child{border-right:none}
+.feat-item::after{
+  content:'';position:absolute;bottom:0;left:50%;
+  width:0;height:2px;background:var(--gold);
+  transform:translateX(-50%);transition:width .5s;
+}
+.feat-item:hover{background:rgba(255,255,255,.03)}
+.feat-item:hover::after{width:55%}
+.feat-icon{font-size:1.8rem;margin-bottom:1.2rem;display:block}
+.feat-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(.95rem,2vw,1.1rem);color:#fff;margin-bottom:.7rem;
+}
+.feat-desc{font-size:.78rem;color:rgba(255,255,255,.32);line-height:1.7;font-weight:300}
+
+/* ─── MENU CAROUSEL ──────────────────────────────── */
+.menu-section{padding:clamp(4rem,8vw,9rem) 0;background:var(--parchment)}
+.menu-hdr{
+  max-width:1300px;margin:0 auto;
+  padding:0 clamp(1.5rem,5vw,5rem);
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:clamp(2rem,4vw,3rem);flex-wrap:wrap;gap:1.5rem;
+}
+.menu-hdr-desc{
+  color:var(--sienna);font-size:.92rem;line-height:1.7;
+  max-width:480px;margin-top:.7rem;font-weight:300;
+}
+.menu-arrows{display:flex;gap:.6rem;align-items:center;flex-shrink:0}
+.menu-arrow-btn{
+  width:44px;height:44px;border-radius:50%;
+  border:1px solid rgba(184,146,74,.3);background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;color:var(--sienna);transition:all .3s;
+}
+.menu-arrow-btn:hover:not(:disabled){background:var(--gold);border-color:var(--gold);color:#fff}
+.menu-arrow-btn:disabled{opacity:.25;cursor:default}
+.menu-carousel-outer{width:100%;overflow:hidden}
+.menu-carousel-track{
+  display:flex;gap:clamp(12px,1.5vw,18px);
+  padding:0 clamp(1.5rem,5vw,5rem) clamp(1rem,2vw,1.5rem);
+  transition:transform .52s cubic-bezier(.4,0,.2,1);
+  will-change:transform;cursor:grab;
+  -webkit-user-select:none;user-select:none;
+}
+.menu-carousel-track.dragging{cursor:grabbing;transition:none}
+.mc-card{
+  flex:0 0 clamp(280px,28vw,350px);
+  border-radius:14px;overflow:hidden;position:relative;
+  background:var(--espresso);
+  transition:transform .4s cubic-bezier(.4,0,.2,1),box-shadow .4s;
+}
+.mc-card:hover{transform:translateY(-7px);box-shadow:0 25px 55px rgba(0,0,0,.18)}
+.mc-img-wrap{position:relative;aspect-ratio:4/3;overflow:hidden}
+.mc-img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .7s cubic-bezier(.4,0,.2,1),filter .5s;filter:brightness(.82);
+}
+.mc-card:hover .mc-img{transform:scale(1.07);filter:brightness(.95)}
+.mc-ov{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(14,11,8,.92) 0%,rgba(14,11,8,.45) 45%,rgba(14,11,8,.1) 75%,transparent 100%);
+}
+.mc-body{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:flex-end;padding:clamp(1rem,2.5vw,1.4rem);
+}
+.mc-tag-wrap{position:absolute;top:clamp(.7rem,1.5vw,1rem);left:clamp(.7rem,1.5vw,1rem)}
+.mc-tag{
+  font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;
+  background:var(--gold);color:#fff;padding:.25rem .65rem;font-weight:600;
+}
+.mc-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.05rem,2.2vw,1.3rem);font-weight:600;
+  color:#fff;line-height:1.2;margin-bottom:.45rem;
+}
+.mc-desc{
+  font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.6;margin-bottom:.9rem;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.mc-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:.8rem;border-top:1px solid rgba(255,255,255,.1);
+}
+.mc-price{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem;color:var(--gold-light);font-weight:400;
+}
+.mc-read{
+  display:flex;align-items:center;gap:.35rem;
+  font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.35);transition:color .25s,gap .25s;
+}
+.mc-card:hover .mc-read{color:var(--gold-light);gap:.6rem}
+.menu-dots{
+  display:flex;justify-content:center;gap:.45rem;
+  margin-top:clamp(1.5rem,3vw,2rem);padding:0 clamp(1.5rem,5vw,5rem);
+}
+.mdot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(184,146,74,.2);border:none;cursor:pointer;
+  transition:all .3s;padding:0;
+}
+.mdot.on{background:var(--gold);width:22px;border-radius:4px}
+
+/* ─── CHEF ────────────────────────────────────────── */
+.chef{
+  padding:clamp(4rem,8vw,9rem) clamp(1.5rem,5vw,5rem);
+  max-width:1300px;margin:0 auto;
+}
+.chef-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(3rem,6vw,8rem);align-items:center}
+.chef-visual{position:relative}
+.chef-photo{width:100%;aspect-ratio:3/4;object-fit:cover;position:relative;z-index:1}
+.chef-decor{
+  position:absolute;bottom:-24px;right:-24px;width:55%;height:55%;
+  border:1px solid var(--gold-pale);z-index:0;pointer-events:none;
+}
+.chef-award{
+  position:absolute;top:1.5rem;left:-1.5rem;z-index:2;
+  background:var(--gold);color:#fff;padding:1rem 1.2rem;
+  text-align:center;box-shadow:0 8px 25px rgba(184,146,74,.3);
+}
+.award-star{font-size:1.1rem;display:block;margin-bottom:.25rem}
+.award-txt{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;font-weight:500;line-height:1.4}
+.chef-quote{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(1.1rem,2.5vw,1.4rem);font-weight:300;
+  color:var(--espresso);line-height:1.6;
+  margin:1.8rem 0;padding-left:1.5rem;
+  border-left:2px solid var(--gold);
+}
+.chef-name{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,3vw,2rem);color:var(--espresso);margin-bottom:.25rem}
+.chef-role{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.chef-body p{line-height:1.9;color:var(--sienna);font-size:.93rem;font-weight:300;margin-bottom:1rem}
+
+/* ─── GALLERY (BENTO) ──────────────────────────────── */
+.gallery-section{padding:clamp(3rem,6vw,6rem) clamp(1.5rem,4vw,4rem);background:var(--parchment)}
+.gallery-inner{max-width:1300px;margin:0 auto}
+.gallery-head{text-align:center;margin-bottom:clamp(2rem,4vw,3.5rem)}
+.bento-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:clamp(80px,12vw,120px);
+  gap:8px;
+}
+.bento-item{
+  overflow:hidden;border-radius:8px;position:relative;cursor:pointer;
+  background:var(--espresso);
+}
+.bento-item img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .7s cubic-bezier(.4,0,.2,1),filter .4s;
+  filter:brightness(.88);
+}
+.bento-item:hover img{transform:scale(1.08);filter:brightness(1)}
+.bento-item .bento-caption{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(44,26,14,.88) 0%,transparent 55%);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:clamp(.8rem,2vw,1.2rem);
+  opacity:0;transition:opacity .4s;
+}
+.bento-item:hover .bento-caption{opacity:1}
+.bento-cap-title{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  color:#fff;font-size:clamp(.85rem,1.8vw,1rem);line-height:1.2;
+}
+.bento-cap-sub{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:.2rem}
+/* span classes */
+.span-c2-r3{grid-column:span 2;grid-row:span 3}
+.span-c1-r2{grid-column:span 1;grid-row:span 2}
+.span-c2-r2{grid-column:span 2;grid-row:span 2}
+.span-c1-r3{grid-column:span 1;grid-row:span 3}
+
+/* ── GALLERY MODAL ── */
+#gallery-modal{
+  position:fixed;inset:0;z-index:800;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(10,6,3,.92);backdrop-filter:blur(16px);
+  padding:1rem;
+}
+#gallery-modal.open{display:flex;animation:modal-in .3s ease}
+@keyframes modal-in{from{opacity:0}to{opacity:1}}
+.modal-main{
+  position:relative;max-width:900px;width:100%;
+  animation:modal-scale .35s cubic-bezier(.4,0,.2,1);
+}
+@keyframes modal-scale{from{transform:scale(.95) translateY(12px)}to{transform:scale(1) translateY(0)}}
+.modal-img-wrap{
+  border-radius:10px;overflow:hidden;
+  max-height:65vh;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.3);
+}
+.modal-img-wrap img{max-width:100%;max-height:65vh;object-fit:contain}
+.modal-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(14,11,8,.85),transparent);
+  padding:2rem 1.5rem 1.2rem;border-radius:0 0 10px 10px;
+}
+.modal-cap-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,2.5vw,1.3rem);color:#fff;font-weight:600}
+.modal-cap-sub{font-size:.8rem;color:rgba(255,255,255,.55);margin-top:.25rem}
+.modal-close{
+  position:absolute;top:-3rem;right:0;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:#fff;font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.modal-close:hover{background:rgba(255,255,255,.2)}
+/* Dock */
+.modal-dock{
+  display:flex;justify-content:center;gap:.4rem;
+  margin-top:1.2rem;flex-wrap:wrap;
+}
+.dock-thumb{
+  width:clamp(42px,8vw,56px);height:clamp(42px,8vw,56px);
+  border-radius:8px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;transition:all .25s;
+  flex-shrink:0;
+}
+.dock-thumb img{width:100%;height:100%;object-fit:cover;filter:brightness(.7);transition:filter .2s}
+.dock-thumb:hover img,.dock-thumb.active img{filter:brightness(1)}
+.dock-thumb.active{border-color:var(--gold);transform:translateY(-4px)}
+
+/* ─── TESTIMONIALS (scrolling columns) ──────────────── */
+.testi-section{
+  background:var(--espresso);
+  padding:clamp(4rem,7vw,8rem) clamp(1.5rem,4vw,4rem);
+  position:relative;overflow:hidden;
+}
+.testi-bg-img{
+  position:absolute;inset:0;opacity:.03;
+  background:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=30') center/cover;
+}
+.testi-inner{max-width:1200px;margin:0 auto;position:relative}
+.testi-head{text-align:center;margin-bottom:clamp(2.5rem,5vw,4.5rem)}
+.testi-head .tag-label{justify-content:center;color:var(--gold)}
+.testi-head .tag-label::before,.testi-head .tag-label::after{content:'';width:28px;height:1px;background:var(--gold)}
+.testi-head .s-title{color:var(--parchment)}
+/* columns container with fade mask */
+.testi-cols{
+  display:flex;gap:clamp(1rem,2vw,1.5rem);
+  max-height:680px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,black 18%,black 82%,transparent);
+  mask-image:linear-gradient(to bottom,transparent,black 18%,black 82%,transparent);
+}
+.testi-col{
+  flex:1;display:flex;flex-direction:column;gap:clamp(.9rem,1.5vw,1.3rem);
+}
+.testi-col-inner{
+  display:flex;flex-direction:column;gap:clamp(.9rem,1.5vw,1.3rem);
+  animation:tscroll var(--dur,14s) linear infinite;
+}
+@keyframes tscroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+.tcard{
+  background:rgba(255,255,255,.04);border:1px solid rgba(184,146,74,.12);
+  border-radius:14px;padding:clamp(1.3rem,3vw,2rem);
+  flex-shrink:0;
+  transition:border-color .3s,transform .3s;
+}
+.tcard:hover{border-color:rgba(184,146,74,.4);transform:translateY(-4px)}
+.tcard-quote{
+  content:'\201C';
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.5rem;color:rgba(184,146,74,.15);
+  line-height:.5;margin-bottom:.8rem;display:block;
+}
+.tcard-text{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(.88rem,1.8vw,1rem);color:rgba(247,242,234,.65);
+  line-height:1.8;margin-bottom:1.3rem;font-weight:300;
+}
+.tcard-stars{display:flex;gap:.2rem;margin-bottom:.8rem}
+.tcard-star{
+  width:12px;height:12px;background:var(--gold);
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+}
+.tcard-author{display:flex;align-items:center;gap:.8rem}
+.tcard-av{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(184,146,74,.25);flex-shrink:0}
+.tcard-name{font-size:.85rem;color:var(--parchment);font-weight:500}
+.tcard-role{font-size:.72rem;color:var(--grey);margin-top:.1rem}
+
+/* ─── RESERVATION ─────────────────────────────────── */
+.reservation{
+  padding:clamp(4rem,8vw,9rem) clamp(1.5rem,5vw,5rem);
+  background:linear-gradient(135deg,var(--espresso) 0%,#1a0c04 100%);
+  position:relative;overflow:hidden;
+}
+.res-decor{
+  position:absolute;right:-80px;top:50%;transform:translateY(-50%);
+  width:500px;height:500px;border:1px solid rgba(184,146,74,.08);border-radius:50%;
+  pointer-events:none;
+}
+.res-decor::before{content:'';position:absolute;inset:30px;border:1px solid rgba(184,146,74,.05);border-radius:50%}
+.res-inner{
+  max-width:1100px;margin:0 auto;position:relative;
+  display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(3rem,6vw,7rem);align-items:center;
+}
+.res-text .s-title{color:var(--parchment)}
+.res-text p{color:rgba(247,242,234,.48);font-size:.93rem;font-weight:300;line-height:1.9;margin-bottom:2.5rem}
+.res-info-item{
+  display:flex;gap:1.2rem;align-items:center;
+  padding:1rem 0;border-bottom:1px solid rgba(184,146,74,.1);
+}
+.res-icon{
+  width:40px;height:40px;flex-shrink:0;
+  border:1px solid rgba(184,146,74,.25);
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;
+  transition:background .3s,border-color .3s;
+}
+.res-info-item:hover .res-icon{background:var(--gold);border-color:var(--gold)}
+.res-info-lbl{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem}
+.res-info-val{font-size:.84rem;color:rgba(247,242,234,.55)}
+.form-wrap{}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.f-field{margin-bottom:1.1rem;position:relative}
+.f-label{display:block;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(184,146,74,.45);margin-bottom:.5rem}
+.f-field input,.f-field select{
+  width:100%;background:transparent;
+  border:none;border-bottom:1px solid rgba(184,146,74,.22);
+  color:var(--parchment);padding:.9rem 0;
+  font-size:.9rem;font-family:'Jost',sans-serif;font-weight:300;
+  outline:none;transition:border-color .3s;
+  -webkit-appearance:none;
+}
+.f-field input::placeholder{color:rgba(247,242,234,.22)}
+.f-field input:focus{border-bottom-color:var(--gold)}
+.f-field select{color:rgba(247,242,234,.4)}
+.f-field select option{background:#1a0c04;color:var(--parchment)}
+.f-field::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--gold);transition:width .4s}
+.f-field:focus-within::after{width:100%}
+.btn-reserve{
+  width:100%;margin-top:1rem;
+  background:var(--gold);color:#fff;border:none;
+  padding:1.1rem;font-size:.75rem;letter-spacing:.28em;text-transform:uppercase;
+  font-family:'Jost',sans-serif;font-weight:500;cursor:pointer;
+  transition:background .3s;position:relative;overflow:hidden;
+}
+.btn-reserve:hover{background:#a07a35}
+
+/* ─── FOOTER ──────────────────────────────────────── */
+footer{
+  background:#0a0603;position:relative;overflow:hidden;
+  border-top:1px solid rgba(255,255,255,.04);
+  padding:clamp(3rem,6vw,5rem) clamp(1.5rem,5vw,5rem) clamp(1.5rem,3vw,2.5rem);
+}
+.ft-top-line{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:35%;height:1px;
+  background:linear-gradient(to right,transparent,rgba(184,146,74,.4),transparent);
+}
+.ft-top-line::after{
+  content:'';position:absolute;top:-3px;left:50%;transform:translateX(-50%);
+  width:50%;height:8px;
+  background:radial-gradient(ellipse,rgba(184,146,74,.15),transparent 70%);
+  filter:blur(4px);
+}
+.ft-inner{
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 2fr;gap:4rem;
+  padding-bottom:3rem;border-bottom:1px solid rgba(255,255,255,.05);
+}
+.ft-logo-row{display:flex;align-items:center;gap:.65rem;margin-bottom:1rem}
+.ft-logo-mark{
+  width:30px;height:30px;background:var(--gold);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;color:#fff;
+}
+.ft-brand-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.35rem;color:var(--parchment);letter-spacing:.08em;
+}
+.ft-brand-name span{color:var(--gold)}
+.ft-tagline{font-size:.79rem;color:rgba(255,255,255,.2);font-weight:300;line-height:1.75;margin-bottom:1.6rem}
+.ft-socials{display:flex;gap:.5rem;flex-wrap:wrap}
+.ft-soc{
+  width:36px;height:36px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.25);text-decoration:none;
+  transition:all .3s;
+}
+.ft-soc svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
+.ft-soc:hover{border-color:var(--gold);color:var(--gold);background:rgba(184,146,74,.07)}
+.ft-links-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+.ft-col-title{
+  font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(255,255,255,.18);margin-bottom:1.2rem;font-weight:500;
+}
+.ft-link-list{list-style:none}
+.ft-link-list li{margin-bottom:.62rem}
+.ft-link-list a{
+  text-decoration:none;color:rgba(255,255,255,.28);
+  font-size:.82rem;font-weight:300;
+  transition:color .2s,padding-left .2s;display:flex;align-items:center;gap:.4rem;
+}
+.ft-link-list a:hover{color:var(--gold-light);padding-left:4px}
+.ft-link-list a svg{width:13px;height:13px;fill:currentColor;opacity:.55;flex-shrink:0}
+.ft-bottom{
+  max-width:1200px;margin:0 auto;padding-top:1.8rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+}
+.ft-copy{font-size:.7rem;color:rgba(255,255,255,.13)}
+.ft-award{font-size:.7rem;color:var(--gold);letter-spacing:.04em}
+/* animated entrance */
+.ft-anim{
+  opacity:0;transform:translateY(-8px);filter:blur(3px);
+  transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1),filter .8s cubic-bezier(.4,0,.2,1);
+}
+.ft-anim.on{opacity:1;transform:translateY(0);filter:blur(0)}
+.ft-anim.d1{transition-delay:.05s}
+.ft-anim.d2{transition-delay:.13s}
+.ft-anim.d3{transition-delay:.21s}
+.ft-anim.d4{transition-delay:.29s}
+.ft-anim.d5{transition-delay:.37s}
+
+/* ─── SCROLL REVEAL ─────────────────────────────────── */
+.rv{opacity:0;transform:translateY(44px);transition:opacity .85s cubic-bezier(.4,0,.2,1),transform .85s cubic-bezier(.4,0,.2,1)}
+.rv-l{opacity:0;transform:translateX(-50px);transition:opacity .85s cubic-bezier(.4,0,.2,1),transform .85s cubic-bezier(.4,0,.2,1)}
+.rv-r{opacity:0;transform:translateX(50px);transition:opacity .85s cubic-bezier(.4,0,.2,1),transform .85s cubic-bezier(.4,0,.2,1)}
+.rv.on,.rv-l.on,.rv-r.on{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+/* Tablet */
+@media(max-width:1024px){
+  #nav{padding:1.3rem 2rem}
+  .nav-links{display:none}
+
+  .about-grid{grid-template-columns:1fr;gap:3rem}
+  .about-visual{height:clamp(280px,55vw,420px);margin-bottom:1rem}
+  .about-photo-main{width:70%;height:72%}
+  .about-photo-sec{width:53%;height:55%}
+
+  .features-band{grid-template-columns:repeat(2,1fr)}
+  .feat-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.05)}
+  .feat-item:nth-child(odd){border-right:1px solid rgba(255,255,255,.05)}
+  .feat-item:nth-child(3),.feat-item:nth-child(4){border-bottom:none}
+
+  .chef-grid{grid-template-columns:1fr;gap:3rem}
+  .chef-visual{max-width:420px;margin:0 auto}
+  .chef-award{left:-1rem}
+
+  .bento-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:clamp(100px,18vw,150px)}
+  .span-c2-r3,.span-c2-r2{grid-column:span 2;grid-row:span 2}
+  .span-c1-r3,.span-c1-r2{grid-column:span 1;grid-row:span 2}
+
+  .testi-cols .testi-col:nth-child(3){display:none}
+
+  .res-inner{grid-template-columns:1fr;gap:3.5rem}
+
+  .ft-inner{grid-template-columns:1fr;gap:2.5rem}
+  .ft-links-grid{grid-template-columns:repeat(2,1fr);gap:1.5rem}
+  .mc-card{flex:0 0 clamp(270px,42vw,320px)}
+}
+
+/* Mobile */
+@media(max-width:640px){
+  #nav{padding:1rem 1.2rem}
+  #nav-fab{top:.9rem;right:1.1rem}
+
+  .hero-ornament{margin-bottom:1.5rem}
+  .hero-sub{margin-bottom:2rem}
+  .hero-btns{gap:.7rem}
+  .btn-fill{padding:.75rem 1.6rem;font-size:.68rem}
+
+  .strip-item{font-size:.62rem;letter-spacing:.2em}
+
+  .about{padding:3.5rem 1.2rem}
+  .about-visual{height:clamp(250px,70vw,340px)}
+  .about-photo-main{height:68%}
+  .about-photo-sec{height:52%}
+  .about-stats{gap:1.5rem}
+
+  .features-band{grid-template-columns:1fr 1fr}
+  .feat-item{padding:1.8rem 1.2rem;border-right:none;border-bottom:1px solid rgba(255,255,255,.05)}
+  .feat-item:nth-child(odd){border-right:1px solid rgba(255,255,255,.05)}
+  .feat-item:nth-child(3),.feat-item:nth-child(4){border-bottom:none}
+
+  .menu-section{padding:3.5rem 0}
+  .menu-hdr{padding:0 1.2rem;flex-direction:column;align-items:flex-start}
+  .menu-arrows{align-self:flex-start}
+  .menu-carousel-track{padding:0 1.2rem .5rem}
+  .mc-card{flex:0 0 80vw}
+
+  .chef{padding:3.5rem 1.2rem}
+  .chef-award{left:0;top:1rem}
+  .chef-decor{display:none}
+
+  .gallery-section{padding:3rem 1.2rem}
+  .bento-grid{
+    grid-template-columns:repeat(2,1fr);
+    grid-auto-rows:clamp(90px,22vw,130px);
+    gap:6px;
+  }
+  .span-c2-r3,.span-c2-r2{grid-column:span 2;grid-row:span 2}
+  .span-c1-r3,.span-c1-r2{grid-column:span 1;grid-row:span 2}
+
+  .testi-section{padding:3.5rem 1.2rem}
+  .testi-cols{max-height:520px}
+  .testi-cols .testi-col:nth-child(2),.testi-cols .testi-col:nth-child(3){display:none}
+
+  .reservation{padding:3.5rem 1.2rem}
+  .f-row{grid-template-columns:1fr}
+
+  footer{padding:3rem 1.2rem 1.5rem}
+  .ft-inner{grid-template-columns:1fr;gap:2rem}
+  .ft-links-grid{grid-template-columns:repeat(2,1fr);gap:1.2rem}
+  .ft-bottom{flex-direction:column;align-items:flex-start}
+
+  /* modal dock responsive */
+  .dock-thumb{width:40px;height:40px}
+  .modal-close{top:-2.5rem}
+
+  /* gallery modal mobile fixes */
+  #gallery-modal{padding:3.5rem .75rem .75rem;align-items:flex-start;overflow-y:auto}
+  .modal-main{margin:auto}
+  .modal-img-wrap{max-height:52vh;border-radius:10px 10px 0 0}
+  .modal-img-wrap img{max-height:52vh}
+  .modal-caption{position:static;background:rgba(14,11,8,.92);padding:1rem 1.1rem;border-radius:0 0 10px 10px}
+  .modal-cap-title{color:var(--parchment);font-size:1rem}
+  .modal-cap-sub{color:rgba(247,242,234,.7)}
+
+  /* reservation form color */
+  .f-field input,.f-field select{color:var(--parchment)!important;color-scheme:dark}
+}
+
+/* Prevent horizontal scroll/shift globally */
+html{overflow-x:hidden}
+.menu-carousel-outer{touch-action:pan-y pinch-zoom}
+
+@media(max-width:380px){
+  .hero-title{font-size:2.6rem}
+  .features-band{grid-template-columns:1fr}
+  .feat-item{border-right:none!important;border-bottom:1px solid rgba(255,255,255,.05)!important}
+  .feat-item:last-child{border-bottom:none!important}
+  .bento-grid{grid-template-columns:1fr}
+  .span-c2-r3,.span-c2-r2,.span-c1-r3,.span-c1-r2{grid-column:span 1;grid-row:span 2}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">Dolce Vita</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
+
+<!-- CURSOR -->
+<div class="c-dot" id="cDot"></div>
+<div class="c-ring" id="cRing"></div>
+
+<!-- NAV FAB -->
+<button id="nav-fab" aria-label="Izbornik" onclick="toggleOverlay()">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- NAV OVERLAY -->
+<div id="nav-overlay" onclick="handleOverlayClick(event)">
+  <nav class="nav-ov-menu">
+    <a href="#about" onclick="closeOverlay()">O nama</a>
+    <a href="#menu" onclick="closeOverlay()">Meni</a>
+    <a href="#chef" onclick="closeOverlay()">Chef</a>
+    <a href="#gallery" onclick="closeOverlay()">Galerija</a>
+    <a href="#reservation" class="nav-ov-reserve" onclick="closeOverlay()">Rezervacija</a>
+    <p class="nav-ov-sub">Dolce Vita · Fine Dining · Zagreb</p>
+  </nav>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-brand">
+    <div class="nav-brand-main">DOLCE VITA</div>
+    <div class="nav-brand-sub">Fine Dining · Zagreb</div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about" data-text="O nama">O nama</a></li>
+    <li><a href="#menu" data-text="Meni">Meni</a></li>
+    <li><a href="#chef" data-text="Chef">Chef</a></li>
+    <li><a href="#gallery" data-text="Galerija">Galerija</a></li>
+    <li><a href="#reservation" data-text="Rezervacija" class="nav-reserve">Rezervacija</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line"></div>
+    </div>
+    <p class="hero-eyebrow">Fine Dining Iskustvo · Zagreb, Hrvatska</p>
+    <h1 class="hero-title">
+      <span class="htl">Gdje svaki</span>
+      <span class="htl">zalogaj postaje</span>
+      <span class="htl">uspomena</span>
+    </h1>
+    <p class="hero-sub">Autentična talijanska kuhinja pripremljena s pasijom, posvećenošću i najsvježijim sezonskim sastojcima.</p>
+    <div class="hero-btns">
+      <a href="#menu" class="btn-fill">Istraži meni</a>
+      <a href="#reservation" class="btn-fill">Rezerviraj stol</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span class="scroll-txt">Scroll</span>
+    <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="strip">
+  <div class="strip-track">
+    <span class="strip-item">Svježi sastojci svaki dan</span>
+    <span class="strip-item">Autentični talijanski recepti</span>
+    <span class="strip-item">Otvoreni od 2009. godine</span>
+    <span class="strip-item">50.000+ zadovoljnih gostiju</span>
+    <span class="strip-item">Lokalni dobavljači</span>
+    <span class="strip-item">Privatni prostor za posebne prilike</span>
+    <span class="strip-item">Svježi sastojci svaki dan</span>
+    <span class="strip-item">Autentični talijanski recepti</span>
+    <span class="strip-item">Otvoreni od 2009. godine</span>
+    <span class="strip-item">50.000+ zadovoljnih gostiju</span>
+    <span class="strip-item">Lokalni dobavljači</span>
+    <span class="strip-item">Privatni prostor za posebne prilike</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-visual rv-l">
+      <div class="about-frame"></div>
+      <img class="about-photo-main" src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=85" alt="Restoran interijor"/>
+      <img class="about-photo-sec" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=85" alt="Svježa pasta"/>
+      <div class="about-since">
+        <span class="since-year">2009</span>
+        <span class="since-lbl">Tradicija</span>
+      </div>
+    </div>
+    <div class="about-body rv-r">
+      <div class="tag-label">Naša priča</div>
+      <h2 class="s-title">Kuhinja s <em>dušom</em>,<br>srce na tanjuru</h2>
+      <p>Dolce Vita nije samo restoran — to je živuće sjećanje na talijanske kuhinje naših predaka. Svaki recept koji koristimo prenošen je s generacije na generaciju, pažljivo čuvan i s ponosom pripremljen.</p>
+      <p>Surađujemo isključivo s lokalnim uzgajivačima i sezonski prilagođavamo naš meni kako bismo vam osigurali ono što je u danom trenutku najsvježije i najokusnije.</p>
+      <div class="about-stats">
+        <div><div class="astat-n" data-count="15">0</div><div class="astat-l">Godina tradicije</div></div>
+        <div><div class="astat-n" data-count="120">0</div><div class="astat-l">Jela u meniju</div></div>
+        <div><div class="astat-n" data-count="50">0</div><div class="astat-l">Tis. gostiju</div></div>
+      </div>
+      <div class="signature">Marco &amp; Sofia</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BAND -->
+<div class="features-band">
+  <div class="feat-item rv d1">
+    <span class="feat-icon">🌿</span>
+    <div class="feat-title">Svježi, lokalni sastojci</div>
+    <p class="feat-desc">Svakodnevni odabir s tržnice i od provjerenih lokalnih dobavljača.</p>
+  </div>
+  <div class="feat-item rv d2">
+    <span class="feat-icon">👨‍🍳</span>
+    <div class="feat-title">Iskusni chefovi</div>
+    <p class="feat-desc">Naš tim školovan je u Italiji i donosi autentično iskustvo talijanskih kuhinja.</p>
+  </div>
+  <div class="feat-item rv d3">
+    <span class="feat-icon">🍷</span>
+    <div class="feat-title">Odabrana vinska karta</div>
+    <p class="feat-desc">Kurirani vinski izbor iz talijanskih regija, idealno uparen s jelima.</p>
+  </div>
+  <div class="feat-item rv d4">
+    <span class="feat-icon">✨</span>
+    <div class="feat-title">Elegantna atmosfera</div>
+    <p class="feat-desc">Prigušeno osvjetljenje i intimni prostor za nezaboravne večeri.</p>
+  </div>
+</div>
+
+<!-- MENU -->
+<section class="menu-section" id="menu">
+  <div class="menu-hdr rv">
+    <div>
+      <div class="tag-label">Naš meni</div>
+      <h2 class="s-title">Okusi koji <em>ostaju</em></h2>
+      <p class="menu-hdr-desc">Svako jelo priprema se od svježih, sezonskih namirnica uz recepte koji su se prenosili generacijama.</p>
+    </div>
+    <div class="menu-arrows">
+      <button class="menu-arrow-btn" id="menuPrev" aria-label="Prethodno" disabled>&#8592;</button>
+      <button class="menu-arrow-btn" id="menuNext" aria-label="Sljedeće">&#8594;</button>
+    </div>
+  </div>
+  <div class="menu-carousel-outer">
+    <div class="menu-carousel-track" id="menuTrack">
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=600&q=85" alt="Bruschetta" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Vegetarijano</span></div>
+          <div class="mc-name">Bruschetta al Pomodoro</div>
+          <div class="mc-desc">Hrskavi kruh s rajčicama, češnjakom, svježim bosiljkom i ekstra djevičanskim maslinovim uljem</div>
+          <div class="mc-foot">
+            <span class="mc-price">8,50 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=600&q=85" alt="Carpaccio" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Chef preporuka</span></div>
+          <div class="mc-name">Carpaccio di Manzo</div>
+          <div class="mc-desc">Tanko rezana goveđa plećka, rukola, kapersi, parmigiano reggiano i citrus dresing</div>
+          <div class="mc-foot">
+            <span class="mc-price">14,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1572441713132-c542fc4fe282?w=600&q=85" alt="Burrata" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Sezonsko</span></div>
+          <div class="mc-name">Burrata con Prosciutto</div>
+          <div class="mc-desc">Kremasta burrata, pršut iz Parme, karamelizirana smokva, orasi i balzamični glaze</div>
+          <div class="mc-foot">
+            <span class="mc-price">16,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=85" alt="Tagliatelle" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Ručno rađeno</span></div>
+          <div class="mc-name">Tagliatelle al Ragù</div>
+          <div class="mc-desc">Ručno rađena tagliatelle, bolognese ragù kuhan 6 sati, svježi parmigiano reggiano</div>
+          <div class="mc-foot">
+            <span class="mc-price">18,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=85" alt="Orata" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Svježe</span></div>
+          <div class="mc-name">Orata al Forno</div>
+          <div class="mc-desc">Cijela orata pečena s limunom, kaperlima, cherry rajčicama i mediteranskim začinskim biljem</div>
+          <div class="mc-foot">
+            <span class="mc-price">26,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=85" alt="Bistecca" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Signature</span></div>
+          <div class="mc-name">Bistecca alla Fiorentina</div>
+          <div class="mc-desc">T-bone od 600g, rosemarin, češnjak, maslinovo ulje i fleur de sel — pečena na drvenoj vatri</div>
+          <div class="mc-foot">
+            <span class="mc-price">38,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mc-card">
+        <div class="mc-img-wrap">
+          <img class="mc-img" src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=85" alt="Tiramisu" loading="lazy"/>
+          <div class="mc-ov"></div>
+        </div>
+        <div class="mc-body">
+          <div class="mc-tag-wrap"><span class="mc-tag">Originalni recept</span></div>
+          <div class="mc-name">Tiramisù della Casa</div>
+          <div class="mc-desc">Klasičan tiramisù po originalnom receptu — mascarpone, savoiardi, jaki espresso i kakao</div>
+          <div class="mc-foot">
+            <span class="mc-price">9,50 €</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="menu-dots" id="menuDots"></div>
+</section>
+
+<!-- CHEF -->
+<section class="chef" id="chef">
+  <div class="chef-grid">
+    <div class="chef-visual rv-l">
+      <div class="chef-award">
+        <span class="award-star">⭐</span>
+        <span class="award-txt">Best Chef<br>Zagreb 2023</span>
+      </div>
+      <img class="chef-photo" src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=85" alt="Chef Marco"/>
+      <div class="chef-decor"></div>
+    </div>
+    <div class="chef-body rv-r">
+      <div class="tag-label">Naš Chef</div>
+      <div class="chef-name">Marco Andreotti</div>
+      <div class="chef-role">Executive Chef · Sommelier</div>
+      <blockquote class="chef-quote">
+        "Kuhanje nije posao — to je razgovor s onima koji sjedaju za vaš stol. Svaki tanjur govori priču."
+      </blockquote>
+      <h2 class="s-title" style="font-size:clamp(1.5rem,3vw,2rem)">25 godina<br>talijanske <em>strasti</em></h2>
+      <p>Rodio se u Bolognei, školovao u rimskoj kulinarskoj akademiji, radio u Milanu i Firenci — prije nego što je srce privela Zagreb. Marco vidi svaki posjet kao privilegiju, a svaki tanjur kao mogućnost da vas iznenadi.</p>
+      <p>Njegova filozofija: izvrsni sastojci + poštovanje tradicije + trenutak inspiracije = savršen obrok.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY (Interactive Bento) -->
+<section class="gallery-section" id="gallery">
+  <div class="gallery-inner">
+    <div class="gallery-head rv">
+      <div class="tag-label" style="justify-content:center">Naša galerija</div>
+      <h2 class="s-title" style="text-align:center">Vizualni <em>putopis</em></h2>
+      <p style="text-align:center;color:var(--sienna);font-size:.88rem;margin-top:.5rem;font-weight:300">Kliknite na fotografiju za detalji prikaz</p>
+    </div>
+
+    <div class="bento-grid" id="bentoGrid">
+      <!-- items injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY MODAL -->
+<div id="gallery-modal">
+  <div class="modal-main">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-img-wrap">
+      <img id="modal-img" src="" alt=""/>
+      <div class="modal-caption">
+        <div class="modal-cap-title" id="modal-title"></div>
+        <div class="modal-cap-sub" id="modal-sub"></div>
+      </div>
+    </div>
+    <div class="modal-dock" id="modal-dock"></div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS (Scrolling Columns) -->
+<section class="testi-section" id="testimonials">
+  <div class="testi-bg-img"></div>
+  <div class="testi-inner">
+    <div class="testi-head rv">
+      <div class="tag-label">Gosti govore</div>
+      <h2 class="s-title">Iskustva koja <em>pamtimo</em></h2>
+    </div>
+    <div class="testi-cols" id="testiCols">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- RESERVATION -->
+<section class="reservation" id="reservation">
+  <div class="res-decor"></div>
+  <div class="res-inner">
+    <div class="rv-l">
+      <div class="tag-label" style="color:var(--gold)">Rezervacije</div>
+      <h2 class="s-title res-text" style="color:var(--parchment)">Rezervirajte<br>vaš <em>trenutak</em></h2>
+      <p class="res-text">Svaki stol je posebno opremljen. Javite nam se za posebne prigode, romantične večere ili grupne proslave.</p>
+      <div>
+        <div class="res-info-item">
+          <div class="res-icon">📍</div>
+          <div><div class="res-info-lbl">Lokacija</div><div class="res-info-val">Ilica 45, 10000 Zagreb</div></div>
+        </div>
+        <div class="res-info-item">
+          <div class="res-icon">📞</div>
+          <div><div class="res-info-lbl">Telefon</div><div class="res-info-val">+385 1 234 5678</div></div>
+        </div>
+        <div class="res-info-item">
+          <div class="res-icon">🕐</div>
+          <div><div class="res-info-lbl">Radno vrijeme</div><div class="res-info-val">Pon–Ned: 11:00 – 23:00</div></div>
+        </div>
+        <div class="res-info-item">
+          <div class="res-icon">✉️</div>
+          <div><div class="res-info-lbl">Email</div><div class="res-info-val">rezervacije@dolcevita.hr</div></div>
+        </div>
+      </div>
+    </div>
+    <form class="form-wrap rv-r" onsubmit="submitRes(event)">
+      <div class="f-row">
+        <div class="f-field"><label class="f-label">Ime i prezime</label><input type="text" placeholder="Vaše ime" required/></div>
+        <div class="f-field"><label class="f-label">Telefon</label><input type="tel" placeholder="+385..."/></div>
+      </div>
+      <div class="f-row">
+        <div class="f-field"><label class="f-label">Datum</label><input type="date" required/></div>
+        <div class="f-field"><label class="f-label">Vrijeme</label><input type="time" required/></div>
+      </div>
+      <div class="f-row">
+        <div class="f-field">
+          <label class="f-label">Broj gostiju</label>
+          <select><option value="">Odaberite</option><option>1–2 osobe</option><option>3–4 osobe</option><option>5–6 osoba</option><option>7–10 osoba</option><option>Grupna (10+)</option></select>
+        </div>
+        <div class="f-field">
+          <label class="f-label">Prigoda</label>
+          <select><option value="">Nije posebna</option><option>Godišnjica</option><option>Rođendan</option><option>Poslovni ručak</option><option>Prosidba</option></select>
+        </div>
+      </div>
+      <div class="f-field"><label class="f-label">Napomene</label><input type="text" placeholder="Alergije, preferencije..."/></div>
+      <button type="submit" class="btn-reserve" id="resBtn">Potvrdite rezervaciju</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-top-line"></div>
+  <div class="ft-inner">
+
+    <div class="ft-brand-col ft-anim d1">
+      <div class="ft-logo-row">
+        <div class="ft-logo-mark">D</div>
+        <div class="ft-brand-name">Dolce<span>Vita</span></div>
+      </div>
+      <p class="ft-tagline">Gdje svaki zalogaj postaje uspomena. Autentična talijanska kuhinja u srcu Zagreba od 2009. godine.</p>
+      <div class="ft-socials">
+        <!-- Instagram -->
+        <a href="#" class="ft-soc" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+        <!-- Facebook -->
+        <a href="#" class="ft-soc" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+        </a>
+        <!-- YouTube -->
+        <a href="#" class="ft-soc" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        </a>
+        <!-- LinkedIn -->
+        <a href="#" class="ft-soc" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="ft-links-grid">
+      <div class="ft-anim d2">
+        <div class="ft-col-title">Navigacija</div>
+        <ul class="ft-link-list">
+          <li><a href="#about">O nama</a></li>
+          <li><a href="#menu">Meni</a></li>
+          <li><a href="#chef">Chef</a></li>
+          <li><a href="#gallery">Galerija</a></li>
+          <li><a href="#reservation">Rezervacija</a></li>
+        </ul>
+      </div>
+      <div class="ft-anim d3">
+        <div class="ft-col-title">Usluge</div>
+        <ul class="ft-link-list">
+          <li><a href="#">Privatne večere</a></li>
+          <li><a href="#">Grupna slavlja</a></li>
+          <li><a href="#">Vinski párovi</a></li>
+          <li><a href="#">Kulinarski tečajevi</a></li>
+          <li><a href="#">Catering</a></li>
+        </ul>
+      </div>
+      <div class="ft-anim d4">
+        <div class="ft-col-title">Informacije</div>
+        <ul class="ft-link-list">
+          <li><a href="#">Alergeni</a></li>
+          <li><a href="#">Vinska karta</a></li>
+          <li><a href="#">Privatni prostor</a></li>
+          <li><a href="#">Poklon boni</a></li>
+          <li><a href="#">Galerija</a></li>
+        </ul>
+      </div>
+      <div class="ft-anim d5">
+        <div class="ft-col-title">Kontakt</div>
+        <ul class="ft-link-list">
+          <li><a href="#">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Ilica 45, Zagreb
+          </a></li>
+          <li><a href="tel:+38512345678">
+            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            +385 1 234 5678
+          </a></li>
+          <li><a href="mailto:info@dolcevita.hr">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            info@dolcevita.hr
+          </a></li>
+          <li><a href="#">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            Pon–Ned: 11–23h
+          </a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+  <div class="ft-bottom">
+    <span class="ft-copy">© 2024 Dolce Vita d.o.o. · Sva prava pridržana.</span>
+    <span class="ft-award">★ TripAdvisor Certificate of Excellence 2024</span>
+  </div>
+</footer>
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+const galleryItems = [
+  {id:1, url:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&q=85', title:'Elegantna atmosfera', sub:'Intimni prostor za posebne trenutke', span:'span-c2-r3'},
+  {id:2, url:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=700&q=85', title:'Ručno rađena pasta', sub:'Tradicija od 1974.', span:'span-c1-r2'},
+  {id:3, url:'https://images.unsplash.com/photo-1572441713132-c542fc4fe282?w=700&q=85', title:'Burrata con Prosciutto', sub:'Sezonski specijalitet', span:'span-c1-r2'},
+  {id:4, url:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=85', title:'Napolitanska pizza', sub:'Pečena u drvenoj peći', span:'span-c2-r2'},
+  {id:5, url:'https://images.unsplash.com/photo-1544025162-d76694265947?w=700&q=85', title:'Pečeno meso', sub:'Sporim pečenjem do savršenstva', span:'span-c1-r2'},
+  {id:6, url:'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=700&q=85', title:'Tiramisù della Casa', sub:'Originalni recept chefa Marca', span:'span-c1-r2'},
+];
+
+const testimonials = [
+  {text:"Dolce Vita je apsolutno remek-djelo. Svaki put kad dođemo, chef nas iznenadi nečim novim. Pasta je uvijek savršena, a atmosfera nezaboravna.", name:"Ana Kovačić", role:"Zagreb · redoviti gost", img:"https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&q=80"},
+  {text:"Dolazio sam u mnogo talijanskih restorana diljem Europe, ali Dolce Vita je posebna. Marco priprema hranu s toliko ljubavi da svaki zalogaj postaje iskustvo.", name:"Marko Horvatić", role:"Rijeka · food kritičar", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=80"},
+  {text:"Proslavili smo 10. godišnjicu braka ovdje. Privatni prostor, personalizirani meni, i tiramisù koji će mi ostati u sjećanju zauvijek. Savršeno.", name:"Ivana & Tomislav", role:"Split · posebna prigoda", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80"},
+  {text:"Radni ručak koji je promijenio kako naši klijenti gledaju na naš restoran. Ljubaznost osoblja i kvaliteta hrane na razini najboljeg fine dininga.", name:"Petra Blažević", role:"Zagreb · poslovni gost", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&q=80"},
+  {text:"Carpaccio i burrata bili su besprijekorni. Sommelier je savršeno uparivao vino uz svaki sljedeći tanjur. Jedva čekam sljedeći posjet.", name:"Luka Perić", role:"Osijek · foodie putnik", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80"},
+  {text:"Prosidba ovdje bila je savršena! Tim je sve organizirao do posljednjeg detalja — cvijeće, šampanjac i privatna terasa. Rekla je da!", name:"Stjepan Jurić", role:"Zagreb · zaručnik", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80"},
+  {text:"Odata al Forno bila je najsvježija riba koju sam probao u gradu. Čist mediteranski okus, savršeno začinjen. Restoran koji drži obećanja.", name:"Josip Novak", role:"Zadar · sezonski posjetitelj", img:"https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=80&q=80"},
+  {text:"Moja mama je proslavila 70. rođendan ovdje. Gostoprimstvo, pažnja prema detaljima i okus svakog jela bili su nadmašili sva naša očekivanja.", name:"Maja Filipović", role:"Zagreb · obiteljska proslava", img:"https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=80&q=80"},
+  {text:"Radeći turističke recenzije diljem regije, Dolce Vita konzistentno ostaje na vrhu moje liste. Autentičnost koja nedostaje u modernoj gastronomiji.", name:"Renata Horvat", role:"Zagreb · turistički vodič", img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&q=80"},
+];
+
+// ── LOADER ────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('hide');
+    document.getElementById('heroBg').classList.add('vis');
+  },1600);
+});
+
+// ── CURSOR (desktop only) ─────────────────────────────
+if(window.matchMedia('(pointer:fine)').matches){
+  const dot=document.getElementById('cDot'),ring=document.getElementById('cRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+  (function loop(){
+    dot.style.left=mx+'px';dot.style.top=my+'px';
+    rx+=(mx-rx)*.13;ry+=(my-ry)*.13;
+    ring.style.left=rx+'px';ring.style.top=ry+'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a,button,.menu-card,.bento-item,.tcard').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('big'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('big'));
+  });
+}
+
+// ── NAV ────────────────────────────────────────────────
+const nav=document.getElementById('nav');
+const navFab=document.getElementById('nav-fab');
+const navOverlay=document.getElementById('nav-overlay');
+
+window.addEventListener('scroll',()=>{
+  const scrolled=scrollY>100;
+  nav.classList.toggle('hidden',scrolled);
+  navFab.classList.toggle('vis',scrolled);
+});
+
+function toggleOverlay(){
+  const open=navOverlay.classList.toggle('open');
+  navFab.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeOverlay(){
+  navOverlay.classList.remove('open');
+  navFab.classList.remove('open');
+  document.body.style.overflow='';
+}
+function handleOverlayClick(e){
+  if(e.target===navOverlay)closeOverlay();
+}
+
+// ── PARALLAX HERO ──────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const bg=document.getElementById('heroBg');
+  if(bg)bg.style.transform=`scale(1.1) translateY(${scrollY*.25}px)`;
+});
+
+// ── SCROLL REVEAL ──────────────────────────────────────
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on')});
+},{threshold:.1});
+document.querySelectorAll('.rv,.rv-l,.rv-r').forEach(el=>ro.observe(el));
+
+// ── COUNTERS ───────────────────────────────────────────
+function animCount(el){
+  const t=+el.dataset.count;let v=0;const s=t/60;
+  const id=setInterval(()=>{
+    v=Math.min(v+s,t);el.textContent=Math.round(v);
+    if(v>=t)clearInterval(id);
+  },25);
+}
+const co=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){animCount(e.target);co.unobserve(e.target)}});
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
+
+// ── MENU CAROUSEL ─────────────────────────────────────
+(function initCarousel(){
+  const track = document.getElementById('menuTrack');
+  const prevBtn = document.getElementById('menuPrev');
+  const nextBtn = document.getElementById('menuNext');
+  const dotsWrap = document.getElementById('menuDots');
+  if(!track) return;
+
+  const cards = track.querySelectorAll('.mc-card');
+  const total = cards.length;
+  let current = 0;
+  let isDragging = false, startX = 0, startTranslate = 0, currentTranslate = 0;
+
+  function getCardWidth(){
+    return cards[0].getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
+  }
+  function getPadLeft(){
+    return parseFloat(getComputedStyle(track).paddingLeft) || 0;
+  }
+  function visibleCount(){
+    const ow = track.parentElement.offsetWidth;
+    const cw = cards[0].getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
+    return Math.max(1, Math.floor((ow - getPadLeft()*2) / cw));
+  }
+  function maxIndex(){ return Math.max(0, total - visibleCount()); }
+
+  function goTo(idx){
+    current = Math.max(0, Math.min(idx, maxIndex()));
+    const offset = current * getCardWidth();
+    track.style.transform = `translateX(-${offset}px)`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current >= maxIndex();
+    dotsWrap.querySelectorAll('.mdot').forEach((d,i)=>d.classList.toggle('on', i===current));
+  }
+
+  // build dots
+  for(let i=0;i<total;i++){
+    const d = document.createElement('button');
+    d.className='mdot'+(i===0?' on':'');
+    d.addEventListener('click',()=>goTo(i));
+    dotsWrap.appendChild(d);
+  }
+
+  prevBtn.addEventListener('click',()=>goTo(current-1));
+  nextBtn.addEventListener('click',()=>goTo(current+1));
+
+  // drag / touch
+  function onDragStart(x){
+    isDragging=true;startX=x;
+    startTranslate = current * getCardWidth();
+    track.classList.add('dragging');
+  }
+  function onDragMove(x){
+    if(!isDragging) return;
+    currentTranslate = startTranslate - (x - startX);
+    track.style.transform = `translateX(-${Math.max(0,currentTranslate)}px)`;
+  }
+  function onDragEnd(x){
+    if(!isDragging) return;
+    isDragging=false;track.classList.remove('dragging');
+    const diff = startX - x;
+    const threshold = getCardWidth() * 0.25;
+    if(diff > threshold) goTo(current+1);
+    else if(diff < -threshold) goTo(current-1);
+    else goTo(current);
+  }
+  track.addEventListener('mousedown', e=>{e.preventDefault();onDragStart(e.clientX)});
+  window.addEventListener('mousemove', e=>{if(isDragging)onDragMove(e.clientX)});
+  window.addEventListener('mouseup',   e=>{if(isDragging)onDragEnd(e.clientX)});
+  track.addEventListener('touchstart', e=>onDragStart(e.touches[0].clientX),{passive:true});
+  track.addEventListener('touchmove',  e=>{if(isDragging)onDragMove(e.touches[0].clientX)},{passive:true});
+  track.addEventListener('touchend',   e=>onDragEnd(e.changedTouches[0].clientX));
+
+  window.addEventListener('resize',()=>goTo(Math.min(current,maxIndex())));
+  goTo(0);
+})();
+
+// ── BENTO GALLERY ──────────────────────────────────────
+const grid=document.getElementById('bentoGrid');
+galleryItems.forEach(item=>{
+  const d=document.createElement('div');
+  d.className=`bento-item ${item.span}`;
+  d.innerHTML=`<img src="${item.url}" alt="${item.title}" loading="lazy"/>
+    <div class="bento-caption">
+      <div class="bento-cap-title">${item.title}</div>
+      <div class="bento-cap-sub">${item.sub}</div>
+    </div>`;
+  d.addEventListener('click',()=>openModal(item.id));
+  grid.appendChild(d);
+});
+
+// modal
+let currentId=1;
+function openModal(id){
+  currentId=id;
+  const item=galleryItems.find(x=>x.id===id);
+  document.getElementById('modal-img').src=item.url;
+  document.getElementById('modal-title').textContent=item.title;
+  document.getElementById('modal-sub').textContent=item.sub;
+  buildDock(id);
+  document.getElementById('gallery-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('gallery-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function buildDock(activeId){
+  const dock=document.getElementById('modal-dock');
+  dock.innerHTML='';
+  galleryItems.forEach(item=>{
+    const t=document.createElement('div');
+    t.className='dock-thumb'+(item.id===activeId?' active':'');
+    t.innerHTML=`<img src="${item.url}" alt="${item.title}" loading="lazy"/>`;
+    t.addEventListener('click',()=>openModal(item.id));
+    dock.appendChild(t);
+  });
+}
+document.getElementById('gallery-modal').addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='ArrowRight'){
+    const idx=galleryItems.findIndex(x=>x.id===currentId);
+    openModal(galleryItems[(idx+1)%galleryItems.length].id);
+  }
+  if(e.key==='ArrowLeft'){
+    const idx=galleryItems.findIndex(x=>x.id===currentId);
+    openModal(galleryItems[(idx-1+galleryItems.length)%galleryItems.length].id);
+  }
+});
+
+// ── TESTIMONIALS (infinite scroll columns) ─────────────
+(function buildTestis(){
+  const container=document.getElementById('testiCols');
+  const col1=testimonials.slice(0,3);
+  const col2=testimonials.slice(3,6);
+  const col3=testimonials.slice(6,9);
+  const cols=[
+    {data:col1,dur:'16s'},
+    {data:col2,dur:'21s'},
+    {data:col3,dur:'18s'},
+  ];
+  cols.forEach((cfg,ci)=>{
+    const colEl=document.createElement('div');
+    colEl.className='testi-col';
+    if(ci===2) colEl.style.display=''; // show/hide handled by CSS
+
+    // double the cards for infinite illusion
+    const inner=document.createElement('div');
+    inner.className='testi-col-inner';
+    inner.style.setProperty('--dur',cfg.dur);
+
+    [0,1].forEach(()=>{
+      cfg.data.forEach(t=>{
+        const card=document.createElement('div');
+        card.className='tcard';
+        card.innerHTML=`
+          <span class="tcard-quote">"</span>
+          <div class="tcard-stars">${'<div class="tcard-star"></div>'.repeat(5)}</div>
+          <p class="tcard-text">${t.text}</p>
+          <div class="tcard-author">
+            <img class="tcard-av" src="${t.img}" alt="${t.name}" loading="lazy"/>
+            <div>
+              <div class="tcard-name">${t.name}</div>
+              <div class="tcard-role">${t.role}</div>
+            </div>
+          </div>`;
+        inner.appendChild(card);
+      });
+    });
+
+    colEl.appendChild(inner);
+    container.appendChild(colEl);
+  });
+})();
+
+// ── FOOTER ANIMATION ──────────────────────────────────
+const ftObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on') });
+},{threshold:.15});
+document.querySelectorAll('.ft-anim').forEach(el=>ftObs.observe(el));
+
+// ── RESERVATION FORM ───────────────────────────────────
+function submitRes(e){
+  e.preventDefault();
+  const btn=document.getElementById('resBtn');
+  btn.textContent='Potvrđujemo...';btn.style.background='var(--sienna)';
+  setTimeout(()=>{
+    btn.textContent='✓ Rezervacija potvrđena! Vidimo se uskoro.';
+    btn.style.background='#3a6b4a';
+    setTimeout(()=>{btn.textContent='Potvrdite rezervaciju';btn.style.background='';e.target.reset();},4000);
+  },1400);
+}
+</script>
+</body>
+</html>
